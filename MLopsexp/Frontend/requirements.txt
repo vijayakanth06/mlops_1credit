@@ -1,0 +1,23 @@
+# Core
+streamlit>=1.38.0
+streamlit[pdf]
+# Data handling
+pandas
+numpy
+
+# Visualization
+altair
+plotly
+bokeh
+pydeck
+matplotlib
+vega_datasets
+
+# Graphs
+graphviz
+
+# Images & media
+pillow
+
+# Optional (for interactive tables)
+streamlit-aggrid
