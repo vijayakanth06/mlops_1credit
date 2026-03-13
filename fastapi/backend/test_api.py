@@ -5,11 +5,20 @@ Run this after starting the FastAPI server to test local or hosted endpoints.
 
 import json
 import os
+from pathlib import Path
 import sys
 
 import requests
+from dotenv import load_dotenv
 
-BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
+FASTAPI_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(FASTAPI_DIR / ".env")
+
+BASE_URL = (
+    os.getenv("API_BASE_URL")
+    or os.getenv("BACKEND_URL")
+    or "http://127.0.0.1:8000"
+).rstrip("/")
 REQUEST_TIMEOUT = 15
 
 

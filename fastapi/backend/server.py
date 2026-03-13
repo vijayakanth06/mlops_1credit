@@ -4,9 +4,13 @@ from pathlib import Path
 import pickle
 
 import pandas as pd
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
+
+FASTAPI_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(FASTAPI_DIR / ".env")
 
 # Global model state
 loaded_model = None

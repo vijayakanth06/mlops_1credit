@@ -1,11 +1,17 @@
 import os
+from pathlib import Path
 
 import requests
 import streamlit as st
+from dotenv import load_dotenv
+
+
+FASTAPI_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(FASTAPI_DIR / ".env")
 
 
 def get_backend_url() -> str:
-    """Read the backend URL from Streamlit secrets or environment variables."""
+    """Read the backend URL from Streamlit secrets, .env, or environment variables."""
     try:
         secret_value = st.secrets.get("BACKEND_URL")
     except Exception:

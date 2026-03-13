@@ -1,6 +1,18 @@
 # FastAPI Folder Deployment
 
-This folder is now self-contained. The backend loads its model from `fastapi/backend/models/ensemble_model.pkl`, and the frontend reads the backend URL from the `BACKEND_URL` environment variable.
+This folder is now self-contained. The backend loads its model from `fastapi/backend/models/ensemble_model.pkl`, and the frontend reads the backend URL from `fastapi/.env`, Streamlit secrets, or environment variables.
+
+## Shared .env file
+
+Edit [fastapi/.env](c:/Users/vikym/Documents/GitHub/mlops_1credit/fastapi/.env) when you want to change the API URL locally.
+
+The most important value is:
+
+```env
+BACKEND_URL=https://your-backend-url.onrender.com
+```
+
+If you do not set `API_BASE_URL`, the backend smoke test will also use `BACKEND_URL` automatically.
 
 ## Local run
 
@@ -25,7 +37,6 @@ python .\fastapi\backend\test_api.py
 Test a deployed backend:
 
 ```powershell
-$env:API_BASE_URL="https://your-backend-url.onrender.com"
 python .\fastapi\backend\test_api.py
 ```
 
@@ -39,6 +50,8 @@ Render supports custom Blueprint paths, so you can deploy directly from `fastapi
 4. Deploy the backend service first if you want to confirm the public URL before the frontend goes live.
 5. Set `BACKEND_URL` on the frontend service to your backend public URL, for example `https://playtennis-backend.onrender.com`.
 6. Redeploy the frontend service.
+
+For Render, keep using the Render dashboard environment variables. The local `.env` file is mainly for local development and quick testing.
 
 ## Manual service setup on Render
 
@@ -62,4 +75,4 @@ Frontend service:
 - Backend no longer depends on `day1/playtennis.csv`, so deploying only the `fastapi` folder works.
 - CORS is enabled for hosted frontend access.
 - Frontend API calls are configurable for local and deployed environments.
-- The API smoke test supports both local and hosted URLs through `API_BASE_URL`.
+- The API smoke test supports both local and hosted URLs through `API_BASE_URL` or `BACKEND_URL`.
