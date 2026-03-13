@@ -76,3 +76,28 @@ Frontend service:
 - CORS is enabled for hosted frontend access.
 - Frontend API calls are configurable for local and deployed environments.
 - The API smoke test supports both local and hosted URLs through `API_BASE_URL` or `BACKEND_URL`.
+
+## Vercel deployment
+
+Vercel can host the backend as a Python function, but it cannot run the existing Streamlit frontend as a long-lived app. For Vercel, this repo now includes a separate static frontend in `fastapi/public` and a Python entrypoint in `fastapi/api/index.py`.
+
+Use these settings in Vercel:
+
+1. Create a new project from this repository.
+2. Set the Root Directory to `fastapi`.
+3. Do not set a custom build command.
+4. Deploy.
+
+After deployment:
+
+- Frontend URL: your Vercel project root, for example `https://your-app.vercel.app`
+- Backend URL: `https://your-app.vercel.app/api`
+- API docs: `https://your-app.vercel.app/api/docs`
+
+Why the earlier Vercel build failed:
+
+- Vercel was building the repository root, not `fastapi`.
+- There was no supported Python entrypoint at that root.
+- The Streamlit frontend is not compatible with Vercel's serverless model.
+
+If you want to keep the Streamlit frontend, use Render for that deployment path. If you want Vercel, use the new static frontend instead.

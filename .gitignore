@@ -1,2 +1,4 @@
 .vscode
 fastapi/.env
+**/__pycache__/
+*.pyc

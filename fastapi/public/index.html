@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlayTennis Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Vercel Frontend</p>
+        <h1>PlayTennis Predictor</h1>
+        <p class="lede">
+          This static frontend talks to the FastAPI backend through the Vercel
+          Python function mounted at <strong>/api</strong>.
+        </p>
+        <div class="hero-actions">
+          <a class="button secondary" href="/api/docs" target="_blank" rel="noreferrer">Open API Docs</a>
+          <button class="button ghost" id="health-check" type="button">Check API Health</button>
+        </div>
+        <div class="health-panel" id="health-output">Health check has not been run yet.</div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <p class="eyebrow">Prediction Form</p>
+            <h2>Weather Inputs</h2>
+          </div>
+          <span class="api-badge">Backend: /api</span>
+        </div>
+
+        <form id="prediction-form" class="form-grid">
+          <label>
+            <span>Outlook</span>
+            <select name="outlook" required>
+              <option value="Sunny">Sunny</option>
+              <option value="Overcast">Overcast</option>
+              <option value="Rain">Rain</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Temperature</span>
+            <select name="temperature" required>
+              <option value="Hot">Hot</option>
+              <option value="Mild">Mild</option>
+              <option value="Cool">Cool</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Humidity</span>
+            <select name="humidity" required>
+              <option value="High">High</option>
+              <option value="Normal">Normal</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Wind</span>
+            <select name="wind" required>
+              <option value="Weak">Weak</option>
+              <option value="Strong">Strong</option>
+            </select>
+          </label>
+
+          <button class="button primary form-submit" type="submit">Predict</button>
+        </form>
+
+        <section id="result-panel" class="result-panel hidden">
+          <p class="eyebrow">Result</p>
+          <h3 id="result-title">Prediction output will appear here.</h3>
+          <p id="result-message"></p>
+          <pre id="result-json"></pre>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
