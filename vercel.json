@@ -1,9 +1,4 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "outputDirectory": "fastapi/public",
-  "functions": {
-    "api/index.py": {
-      "excludeFiles": "{day1/**,day2/**,ML_flow_implementation/**,mlartifacts/**,mlflow.db,MLopsexp/**,.github/**,fastapi/frontend/**,fastapi/backend/test_api.py}"
-    }
-  }
+  "outputDirectory": "fastapi/public"
 }
