@@ -1,13 +1,48 @@
-import streamlit as st
+import os
+
 import requests
+import streamlit as st
+
+
+def get_backend_url() -> str:
+    """Read the backend URL from Streamlit secrets or environment variables."""
+    try:
+        secret_value = st.secrets.get("BACKEND_URL")
+    except Exception:
+        secret_value = None
+
+    backend_url = secret_value or os.getenv("BACKEND_URL") or "http://127.0.0.1:8000"
+    return backend_url.rstrip("/")
+
+
+def build_api_url(path: str) -> str:
+    return f"{BACKEND_URL}{path}"
+
+
+def get_error_detail(response: requests.Response) -> str:
+    try:
+        payload = response.json()
+    except ValueError:
+        return response.text or "Unknown error"
+
+    if isinstance(payload, dict):
+        return payload.get("detail") or payload.get("message") or str(payload)
+
+    return str(payload)
+
+
+BACKEND_URL = get_backend_url()
+REQUEST_TIMEOUT = 15
 
 st.set_page_config(page_title="PlayTennis Prediction", page_icon="🎾")
 st.title("🎾 PlayTennis Prediction API")
 
 st.markdown("""
 Predict whether you should play tennis based on current weather conditions.
-Connects to the FastAPI backend at `http://localhost:8000`.
+This frontend uses the BACKEND_URL environment variable when deployed.
 """)
+
+st.caption(f"Connected backend: {BACKEND_URL}")
 
 # Input form
 with st.form("prediction_form"):
@@ -32,8 +67,11 @@ if submit:
     }
     
     try:
-        # Assuming the FastAPI server is running on localhost:8000
-        response = requests.post("http://localhost:8000/predict", json=payload)
+        response = requests.post(
+            build_api_url("/predict"),
+            json=payload,
+            timeout=REQUEST_TIMEOUT,
+        )
         
         if response.status_code == 200:
             result = response.json()
@@ -49,18 +87,21 @@ if submit:
                 
             st.json(result["input_data"])
         else:
-            error_detail = response.json().get('detail', 'Unknown error')
+            error_detail = get_error_detail(response)
             st.error(f"API Error ({response.status_code}): {error_detail}")
             
-    except requests.exceptions.ConnectionError:
-        st.error("Could not connect to the FastAPI server. Please ensure it is running on http://localhost:8000")
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {str(e)}")
+    except requests.exceptions.RequestException as exc:
+        st.error(f"Could not reach the backend at {BACKEND_URL}: {exc}")
 
 # Health check display in sidebar
+st.sidebar.write(f"Backend: {BACKEND_URL}")
+st.sidebar.markdown(f"[Open API docs]({build_api_url('/docs')})")
+
 if st.sidebar.button("Check API Health"):
     try:
-        health = requests.get("http://localhost:8000/health").json()
-        st.sidebar.write(health)
-    except:
-        st.sidebar.error("API is offline")
+        health_response = requests.get(build_api_url("/health"), timeout=REQUEST_TIMEOUT)
+        st.sidebar.write(health_response.json())
+        if health_response.status_code != 200:
+            st.sidebar.error(f"Health check returned {health_response.status_code}")
+    except requests.exceptions.RequestException as exc:
+        st.sidebar.error(f"API is offline: {exc}")

@@ -1,38 +1,56 @@
 """
 Test script for the PlayTennis Prediction API
-Run this after starting the FastAPI server to test the endpoints
+Run this after starting the FastAPI server to test local or hosted endpoints.
 """
 
-import requests
 import json
+import os
+import sys
 
-# Base URL for the API
-BASE_URL = "http://127.0.0.1:8000"
+import requests
+
+BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
+REQUEST_TIMEOUT = 15
+
+
+def print_response(title, response):
+    print("\n" + "=" * 50)
+    print(title)
+    print("=" * 50)
+    print(f"Status Code: {response.status_code}")
+    try:
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+    except ValueError:
+        print(f"Response Text: {response.text}")
+
+
+def expect_status(response, expected_status):
+    if response.status_code != expected_status:
+        raise AssertionError(
+            f"Expected status {expected_status}, got {response.status_code}: {response.text}"
+        )
 
 def test_root():
     """Test the root endpoint"""
-    print("\n" + "="*50)
-    print("Testing Root Endpoint")
-    print("="*50)
-    response = requests.get(f"{BASE_URL}/")
-    print(f"Status Code: {response.status_code}")
-    print(f"Response: {json.dumps(response.json(), indent=2)}")
+    response = requests.get(f"{BASE_URL}/", timeout=REQUEST_TIMEOUT)
+    print_response("Testing Root Endpoint", response)
+    expect_status(response, 200)
 
 def test_health():
     """Test the health check endpoint"""
-    print("\n" + "="*50)
-    print("Testing Health Endpoint")
-    print("="*50)
-    response = requests.get(f"{BASE_URL}/health")
-    print(f"Status Code: {response.status_code}")
-    print(f"Response: {json.dumps(response.json(), indent=2)}")
+    response = requests.get(f"{BASE_URL}/health", timeout=REQUEST_TIMEOUT)
+    print_response("Testing Health Endpoint", response)
+    expect_status(response, 200)
 
-def test_prediction(outlook, temperature, humidity, wind):
+
+def test_openapi():
+    """Test the generated OpenAPI schema."""
+    response = requests.get(f"{BASE_URL}/openapi.json", timeout=REQUEST_TIMEOUT)
+    print_response("Testing OpenAPI Schema", response)
+    expect_status(response, 200)
+
+def test_prediction(outlook, temperature, humidity, wind, expected_status=200):
     """Test the prediction endpoint"""
-    print("\n" + "="*50)
-    print(f"Testing Prediction: {outlook}, {temperature}, {humidity}, {wind}")
-    print("="*50)
-    
     data = {
         "outlook": outlook,
         "temperature": temperature,
@@ -40,29 +58,28 @@ def test_prediction(outlook, temperature, humidity, wind):
         "wind": wind
     }
     
-    response = requests.post(f"{BASE_URL}/predict", json=data)
-    print(f"Status Code: {response.status_code}")
+    response = requests.post(f"{BASE_URL}/predict", json=data, timeout=REQUEST_TIMEOUT)
+    print_response(
+        f"Testing Prediction: {outlook}, {temperature}, {humidity}, {wind}",
+        response,
+    )
+    expect_status(response, expected_status)
     
     if response.status_code == 200:
         result = response.json()
         print(f"Prediction: {result['prediction']}")
         print(f"Message: {result['message']}")
-        print(f"Full Response: {json.dumps(result, indent=2)}")
-    else:
-        print(f"Error: {response.text}")
 
 if __name__ == "__main__":
     print("PlayTennis API Test Suite")
-    print("Make sure the server is running: uvicorn server:app --reload")
+    print(f"Target API: {BASE_URL}")
+    print("For local testing, start the server with: python .\\fastapi\\backend\\server.py")
     
     try:
-        # Test root endpoint
         test_root()
-        
-        # Test health endpoint
         test_health()
-        
-        # Test predictions with various weather conditions
+        test_openapi()
+
         test_cases = [
             ("Sunny", "Hot", "High", "Weak"),
             ("Overcast", "Mild", "Normal", "Strong"),
@@ -74,14 +91,13 @@ if __name__ == "__main__":
         for outlook, temperature, humidity, wind in test_cases:
             test_prediction(outlook, temperature, humidity, wind)
         
-        # Test with invalid input
-        print("\n" + "="*50)
-        print("Testing Invalid Input")
-        print("="*50)
-        test_prediction("InvalidOutlook", "Hot", "High", "Weak")
+        test_prediction("InvalidOutlook", "Hot", "High", "Weak", expected_status=400)
+        print("\nAll API checks passed.")
         
     except requests.exceptions.ConnectionError:
         print("\n❌ Error: Could not connect to the server.")
-        print("Make sure the server is running with: uvicorn server:app --reload")
+        print("Make sure the server is running, or set API_BASE_URL to your deployed backend.")
+        sys.exit(1)
     except Exception as e:
         print(f"\n❌ Error: {str(e)}")
+        sys.exit(1)

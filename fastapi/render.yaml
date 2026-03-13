@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: playtennis-backend
+    runtime: python
+    rootDir: fastapi/backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: ALLOWED_ORIGINS
+        value: "*"
+
+  - type: web
+    name: playtennis-frontend
+    runtime: python
+    rootDir: fastapi/frontend
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run main.py --server.address 0.0.0.0 --server.port $PORT --server.headless true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: BACKEND_URL
+        sync: false
